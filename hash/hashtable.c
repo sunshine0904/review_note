@@ -64,6 +64,7 @@ void hash_add(struct hash_table *table,struct hash_bucket *item)
 
     item->prev = NULL;
     item->next = table->buckets[val];
+    item->hashval = val;
     if (item->next)
     {
         item->next->prev = item;
