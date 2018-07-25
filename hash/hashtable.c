@@ -24,8 +24,8 @@ uint32_t hash_compare(void *item, void *hash_key)
     struct stu_hashkey *pkey = NULL;
     struct stu_hashkey *pkey_cmp = hash_key;
 
-    pkey = &(((struct students *)item)->key);
-
+    pkey = (((struct hash_bucket *)item)->hash_key);
+    
     if ((pkey->serial_num == pkey_cmp->serial_num) &&
         (pkey->age == pkey_cmp->age))
     {
@@ -59,9 +59,9 @@ void hash_add(struct hash_table *table,struct hash_bucket *item)
         return ERRNO_FAIL;
     }
     
-    val = table->hash_compute(&(item->hash_key));
+    val = table->hash_compute((item->hash_key));
     val %= BUCKET_SIZE;
-
+    
     item->prev = NULL;
     item->next = table->buckets[val];
     item->hashval = val;
@@ -77,7 +77,10 @@ void hash_add(struct hash_table *table,struct hash_bucket *item)
 
 void hash_delete(struct hash_table *table, struct hash_bucket *item)
 {
-    uint32_t val = table->hash_compute(item->hash_key);
+    uint32_t val = 0;
+
+    val = table->hash_compute(item->hash_key);
+    val %= BUCKET_SIZE;
     
     if(item->prev)
     {
@@ -96,11 +99,14 @@ void hash_delete(struct hash_table *table, struct hash_bucket *item)
     table->entry_size --;
 }
 
-void hash_find(struct hash_table *table, void *key)
+void *hash_find(struct hash_table *table, void *key)
 {
     struct hash_bucket *item = NULL;
-    uint32_t val = table->hash_compute(key);
+    uint32_t val = 0;
 
+    val = table->hash_compute(key);
+    val %= BUCKET_SIZE;
+    
     for(item = table->buckets[val]; item; item = item->next)
     {
         if (table->hash_compare(item,key) == ERRNO_SUCCESS)
@@ -118,8 +124,6 @@ void hash_bucket_loop(struct hash_table *table)
     struct hash_bucket *pbucket = NULL;
     struct students *stu = NULL;
     uint32_t val = 0;
-
-    printf("entry_size:%d hash_size:%d\n",table->entry_size, table->hash_size);
 
     for(val = 0; val < BUCKET_SIZE; val ++)
     {
@@ -145,10 +149,12 @@ void main()
     struct hash_table stu_table;
     struct hash_bucket *pbucket = NULL;
     struct students stu;
+    struct stu_hashkey key; 
     struct students *pstu = NULL;
     uint32_t i = 0;
 
     memset(&stu, 0, sizeof(struct students));
+    memset(&key, 0, sizeof(struct stu_hashkey));
     hash_table_init(&stu_table, 4096, hash_compute, hash_compare);
 
     for(i = 0;i < 10; i ++)
@@ -171,4 +177,20 @@ void main()
 
     hash_bucket_loop(&stu_table);
 
+    printf ("\n\n");
+
+    for (i = 0; i < 5; i ++)
+    {
+        key.serial_num = 20180900 + i;
+        key.age = 25;
+        pbucket = hash_find(&stu_table, &key);
+        
+        if (!pbucket) continue;
+
+        hash_delete(&stu_table, pbucket);
+        free(pbucket->data);
+        free(pbucket);
+    }
+
+    hash_bucket_loop(&stu_table);
 }
