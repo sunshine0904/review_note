@@ -23,7 +23,15 @@ int main(int argc, char **argv)
     
     if (mkfifo("fifo", 0666) < 0)
     {
-        printf("mkfifo error!errno:%s\n",strerror(errno));
+        if (errno == EEXIST)
+        {
+            printf("fifo exist!\n");
+        }
+        else
+        {
+            printf("mkfifo error!errno:%s\n",strerror(errno));
+            return;
+        }
     }
 
     if ((r_fd = open("fifo", O_RDONLY)) < 0)
