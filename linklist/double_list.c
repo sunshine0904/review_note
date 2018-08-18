@@ -7,7 +7,7 @@
 
 #include<stdio.h>
 
-#include "linklist.h"
+#include "double_list.h"
 
 void listnode_add_tail(struct list *l, void *val)
 {
@@ -48,7 +48,7 @@ void listnode_add_head(struct list *l, void *val)
     }
     else
     {
-        l->tail->prev = node;
+        l->head->prev = node;
     }
 
     l->head = node;
