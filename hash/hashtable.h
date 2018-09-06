@@ -5,6 +5,8 @@
 	> Created Time: Wed 18 Jul 2018 04:46:56 PM CST
  ************************************************************************/
 
+#pragma once
+
 #ifndef _HASHTABLE_H
 #define _HASHTABLE_H
 
